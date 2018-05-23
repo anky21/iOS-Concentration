@@ -10,6 +10,16 @@ import UIKit
 
 class ViewController: UIViewController {
     
+    let halloweenTheme = Theme.init(themeColor: .black, cardColor: .orange, emojis: ["👻", "🎃", "👹", "😈", "🦇", "👽" ])
+    let faceTheme = Theme.init(themeColor: .red, cardColor: .lightGray, emojis: ["😫", "😳", "😡", "😵", "😬", "🤭" ])
+    let animalTheme = Theme.init(themeColor: .darkGray, cardColor: .green, emojis: ["😺", "🐶", "🐹", "🦋", "🦄", "🐥"])
+    let foodTheme = Theme.init(themeColor: .purple, cardColor: .yellow, emojis: ["🍎", "🍇", "🍉", "🍓", "🌶", "🍒"])
+    
+    var emojiChoices: [String]?
+    var themeColor: UIColor?
+    var cardColor: UIColor?
+    var emoji = [Int:String]()
+    
     // lazy: only initialised when called, can't use didSet
     lazy var game = Concentration(numberOfPairsOfCards: (cardButtons.count + 1) / 2)
     
@@ -19,18 +29,45 @@ class ViewController: UIViewController {
             flipCountLabel.text = "Flips: \(flipCount)"
         }
     }
+    
+    var score = 0 {
+        didSet {
+            scoreLabel.text = "Score: \(score)"
+        }
+    }
 
     @IBOutlet weak var flipCountLabel: UILabel!
     
+    @IBOutlet weak var newGameButton: UIButton!
+    @IBOutlet weak var scoreLabel: UILabel!
     @IBOutlet var cardButtons: [UIButton]!
     
     @IBAction func touchCard(_ sender: UIButton) {
-        flipCount += 1
         if let cardNumber = cardButtons.index(of: sender) {
             game.chooseCard(at: cardNumber)
+            flipCount = game.flipCount
+            score = game.score
             updateViewFromModel()
         }
     }
+    
+    override func viewDidLoad() {
+        loadThemeSettings()
+    }
+    
+    func loadThemeSettings() {
+        let themes = [halloweenTheme, faceTheme, animalTheme, foodTheme]
+        let selectedThemeNumber = Int(arc4random_uniform(UInt32(themes.count)))
+        emojiChoices = themes[selectedThemeNumber].emojis
+        themeColor = themes[selectedThemeNumber].themeColor
+        cardColor = themes[selectedThemeNumber].cardColor
+        scoreLabel.textColor = cardColor
+        flipCountLabel.textColor = cardColor
+        newGameButton.setTitleColor(cardColor, for: .normal)
+        emoji = [Int:String]()
+        view.backgroundColor = themeColor
+    }
+    
     
     func updateViewFromModel() {
         for index in cardButtons.indices {
@@ -41,13 +78,18 @@ class ViewController: UIViewController {
                 button.backgroundColor = #colorLiteral(red: 0.9999960065, green: 1, blue: 1, alpha: 1)
             } else {
                 button.setTitle("", for: .normal)
-                button.backgroundColor = card.isMatched ? #colorLiteral(red: 0, green: 0, blue: 0, alpha: 0) : #colorLiteral(red: 1, green: 0.5781051517, blue: 0, alpha: 1)
+                button.backgroundColor = card.isMatched ? #colorLiteral(red: 0, green: 0, blue: 0, alpha: 0) : cardColor
             }
         }
     }
     
-    var emojiChoices = ["👻", "🎃", "👹", "😈", "🦇", "👽" ]
-    var emoji = [Int:String]()
+    @IBAction func startNewGame(_ sender: UIButton) {
+        game.startNewGame()
+        flipCount = game.flipCount
+        score = game.score
+        loadThemeSettings()
+        updateViewFromModel()
+    }
     
     func emoji(for card: Card) -> String {
 //        if emoji[card.identifier] != nil {
@@ -55,15 +97,12 @@ class ViewController: UIViewController {
 //        } else{
 //            return "?"
 //        }
-        if emoji[card.identifier] == nil, emojiChoices.count > 0 {
-            let randomIndex = Int(arc4random_uniform(UInt32(emojiChoices.count)))
-            emoji[card.identifier] = emojiChoices.remove(at: randomIndex)
+        if emoji[card.identifier] == nil, emojiChoices!.count > 0 {
+            let randomIndex = Int(arc4random_uniform(UInt32(emojiChoices!.count)))
+            emoji[card.identifier] = emojiChoices!.remove(at: randomIndex)
         }
         
         return emoji[card.identifier] ?? "?"
     }
-
-
-    
 }
 

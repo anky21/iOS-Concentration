@@ -13,13 +13,24 @@ class Concentration {
     
     var indexOfOneAndOnlyFaceUpCard: Int?
     
+    var flipCount = 0
+    
+    var score = 0
+    
+    var cardsSeen = [Int]()
+    
     func chooseCard(at index: Int) {
+        
+        flipCount += 1
         
         if !cards[index].isMatched {
             if let matchIndex = indexOfOneAndOnlyFaceUpCard, matchIndex != index {
                 if cards[matchIndex].identifier == cards[index].identifier {
                     cards[matchIndex].isMatched = true
                     cards[index].isMatched = true
+                    score += 2
+                } else {
+                    updateScore(index: index)
                 }
                 cards[index].isFaceUp = true
                 indexOfOneAndOnlyFaceUpCard = nil
@@ -30,7 +41,39 @@ class Concentration {
                 }
                 cards[index].isFaceUp = true
                 indexOfOneAndOnlyFaceUpCard = index
+                
+                updateScore(index: index)
             }
+        }
+    }
+    
+    // Update the score
+    func updateScore(index: Int) {
+        if cardsSeen.contains(cards[index].identifier) {
+            score -= 1
+        } else {
+            cardsSeen.append(cards[index].identifier)
+        }
+    }
+    
+    // Shuffle cards
+    func shuffleCards() {
+        for index in cards.indices {
+            cards.swapAt(index, Int(arc4random_uniform(UInt32(cards.count))))
+        }
+    }
+    
+    func startNewGame() {
+        flipCount = 0
+        score = 0
+        cardsSeen = [Int]()
+        indexOfOneAndOnlyFaceUpCard = nil
+        
+        shuffleCards()
+        
+        for index in cards.indices {
+            cards[index].isFaceUp = false
+            cards[index].isMatched = false
         }
     }
     
@@ -43,6 +86,7 @@ class Concentration {
             // cards += [card, card]
         }
         
-        // ToDo: Shuffle the cards
+        // Shuffle the cards
+        shuffleCards()
     }
 }

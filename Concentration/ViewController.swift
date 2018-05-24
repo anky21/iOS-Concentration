@@ -10,42 +10,42 @@ import UIKit
 
 class ViewController: UIViewController {
     
-    let halloweenTheme = Theme.init(themeColor: .black, cardColor: .orange, emojis: ["👻", "🎃", "👹", "😈", "🦇", "👽" ])
-    let faceTheme = Theme.init(themeColor: .red, cardColor: .lightGray, emojis: ["😫", "😳", "😡", "😵", "😬", "🤭" ])
-    let animalTheme = Theme.init(themeColor: .darkGray, cardColor: .green, emojis: ["😺", "🐶", "🐹", "🦋", "🦄", "🐥"])
-    let foodTheme = Theme.init(themeColor: .purple, cardColor: .yellow, emojis: ["🍎", "🍇", "🍉", "🍓", "🌶", "🍒"])
+    private let halloweenTheme = Theme.init(themeColor: .black, cardColor: .orange, emojis: ["👻", "🎃", "👹", "😈", "🦇", "👽" ])
+    private let faceTheme = Theme.init(themeColor: .red, cardColor: .lightGray, emojis: ["😫", "😳", "😡", "😵", "😬", "🤭" ])
+    private let animalTheme = Theme.init(themeColor: .darkGray, cardColor: .green, emojis: ["😺", "🐶", "🐹", "🦋", "🦄", "🐥"])
+    private let foodTheme = Theme.init(themeColor: .purple, cardColor: .yellow, emojis: ["🍎", "🍇", "🍉", "🍓", "🌶", "🍒"])
     
-    var emojiChoices: [String]?
-    var themeColor: UIColor?
-    var cardColor: UIColor?
-    var emoji = [Int:String]()
+    private var emojiChoices: [String]?
+    private var themeColor: UIColor?
+    private var cardColor: UIColor?
+    private var emoji = [Int:String]()
     
     // lazy: only initialised when called, can't use didSet
-    lazy var game = Concentration(numberOfPairsOfCards: numberOfPairsOfCards)
+    private lazy var game = Concentration(numberOfPairsOfCards: numberOfPairsOfCards)
     
     // Read only computed property
     var numberOfPairsOfCards: Int {
         return (cardButtons.count + 1) / 2
     }
     
-    var flipCount = 0 {
+    private(set) var flipCount = 0 {
         // Property observer
         didSet {
             flipCountLabel.text = "Flips: \(flipCount)"
         }
     }
     
-    var score = 0 {
+    private(set) var score = 0 {
         didSet {
             scoreLabel.text = "Score: \(score)"
         }
     }
 
-    @IBOutlet weak var flipCountLabel: UILabel!
+    @IBOutlet private weak var flipCountLabel: UILabel!
     
-    @IBOutlet weak var newGameButton: UIButton!
-    @IBOutlet weak var scoreLabel: UILabel!
-    @IBOutlet var cardButtons: [UIButton]!
+    @IBOutlet private weak var newGameButton: UIButton!
+    @IBOutlet private weak var scoreLabel: UILabel!
+    @IBOutlet private var cardButtons: [UIButton]!
     
     @IBAction func touchCard(_ sender: UIButton) {
         if let cardNumber = cardButtons.index(of: sender) {
@@ -60,9 +60,9 @@ class ViewController: UIViewController {
         loadThemeSettings()
     }
     
-    func loadThemeSettings() {
+    private func loadThemeSettings() {
         let themes = [halloweenTheme, faceTheme, animalTheme, foodTheme]
-        let selectedThemeNumber = Int(arc4random_uniform(UInt32(themes.count)))
+        let selectedThemeNumber = themes.count.arc4random
         emojiChoices = themes[selectedThemeNumber].emojis
         themeColor = themes[selectedThemeNumber].themeColor
         cardColor = themes[selectedThemeNumber].cardColor
@@ -74,7 +74,7 @@ class ViewController: UIViewController {
     }
     
     
-    func updateViewFromModel() {
+    private func updateViewFromModel() {
         for index in cardButtons.indices {
             let button = cardButtons[index]
             let card = game.cards[index]
@@ -96,18 +96,23 @@ class ViewController: UIViewController {
         updateViewFromModel()
     }
     
-    func emoji(for card: Card) -> String {
-//        if emoji[card.identifier] != nil {
-//            return emoji[card.identifier]!
-//        } else{
-//            return "?"
-//        }
+    private func emoji(for card: Card) -> String {
         if emoji[card.identifier] == nil, emojiChoices!.count > 0 {
-            let randomIndex = Int(arc4random_uniform(UInt32(emojiChoices!.count)))
-            emoji[card.identifier] = emojiChoices!.remove(at: randomIndex)
+            emoji[card.identifier] = emojiChoices!.remove(at: emojiChoices!.count)
         }
         
         return emoji[card.identifier] ?? "?"
     }
 }
 
+extension Int {
+    var arc4random: Int {
+        if self > 0 {
+            return Int(arc4random_uniform(UInt32(self)))
+        } else if self < 0 {
+            return -Int(arc4random_uniform(UInt32(abs(self))))
+        } else {
+            return 0
+        }
+    }
+}

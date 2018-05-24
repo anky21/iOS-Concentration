@@ -21,7 +21,12 @@ class ViewController: UIViewController {
     var emoji = [Int:String]()
     
     // lazy: only initialised when called, can't use didSet
-    lazy var game = Concentration(numberOfPairsOfCards: (cardButtons.count + 1) / 2)
+    lazy var game = Concentration(numberOfPairsOfCards: numberOfPairsOfCards)
+    
+    // Read only computed property
+    var numberOfPairsOfCards: Int {
+        return (cardButtons.count + 1) / 2
+    }
     
     var flipCount = 0 {
         // Property observer

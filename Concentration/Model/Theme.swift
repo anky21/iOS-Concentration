@@ -11,5 +11,5 @@ import UIKit
 struct Theme {
     var themeColor: UIColor
     var cardColor: UIColor
-    var emojis: [String]
+    var emojis: String
 }

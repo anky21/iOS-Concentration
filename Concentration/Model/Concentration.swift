@@ -8,22 +8,14 @@
 
 import Foundation
 
-class Concentration {
+struct Concentration {
     private(set) var cards = [Card]()
     
     private var indexOfOneAndOnlyFaceUpCard: Int? {
         get {
-            var foundIndex: Int?
-            for index in cards.indices {
-                if cards[index].isFaceUp {
-                    if foundIndex == nil {
-                        foundIndex = index
-                    } else {
-                        return nil
-                    }
-                }
-            }
-            return foundIndex
+            let faceUpCardIndices = cards.indices.filter { cards[$0].isFaceUp }
+//            return faceUpCardIndices.count == 1 ? faceUpCardIndices.first : nil
+            return faceUpCardIndices.oneAndOnly
         }
         set {
             for index in cards.indices {
@@ -38,7 +30,7 @@ class Concentration {
     
     private(set) var cardsSeen = [Int]()
     
-    func chooseCard(at index: Int) {
+    mutating func chooseCard(at index: Int) {
         assert(cards.indices.contains(index), "Concentration.chooseCard(at: \(index)): chosen index not in the carsd")
             
         flipCount += 1
@@ -62,7 +54,7 @@ class Concentration {
     }
     
     // Update the score
-    func updateScore(index: Int) {
+    mutating func updateScore(index: Int) {
         if cardsSeen.contains(cards[index].identifier) {
             score -= 1
         } else {
@@ -71,13 +63,13 @@ class Concentration {
     }
     
     // Shuffle cards
-    func shuffleCards() {
+    mutating func shuffleCards() {
         for index in cards.indices {
             cards.swapAt(index, Int(arc4random_uniform(UInt32(cards.count))))
         }
     }
     
-    func startNewGame() {
+   mutating func startNewGame() {
         flipCount = 0
         score = 0
         cardsSeen = [Int]()
@@ -104,5 +96,11 @@ class Concentration {
         
         // Shuffle the cards
         shuffleCards()
+    }
+}
+
+extension Collection {
+    var oneAndOnly: Element? {
+        return count == 1 ? first : nil
     }
 }
